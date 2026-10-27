@@ -1,6 +1,8 @@
 node_modules/
+.astro
 .wrangler/
 .DS_Store
+.vscode
 
 # Secrets: never upload these
 .env
