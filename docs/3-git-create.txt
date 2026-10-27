@@ -1,0 +1,27 @@
+Partner — your local repo has no commits yet ("Recent commits" is empty), so commit first or there's nothing to push.
+
+```bash
+# 1. Make the first commit (skip if you already have one)
+git add -A
+git commit -m "chore: initial commit"
+
+# 2. Create the GitHub repo, add it as origin, and push in one step
+gh repo create website-2 --private --source=. --remote=origin --push
+```
+
+What the flags do:
+- `--source=.` uses the current directory as the repo instead of cloning a new empty one.
+- `--remote=origin` adds the new repo as `origin`.
+- `--push` pushes `main` and sets upstream.
+- Use `--public` instead of `--private` if you want it public. Add `--description "..."` if you like.
+
+Check it:
+```bash
+gh repo view --web
+git remote -v
+```
+
+If you see `gh: not logged in`, run `! gh auth login` first. If you see `Name already exists on this account`, either choose a different name or link the existing repo with `git remote add origin git@github.com:<you>/website-2.git && git push -u origin main`.
+
+Before `git add -A`, check that `.gitignore` covers `node_modules/`, `dist/`, `.astro/` and `.env*`. The Astro scaffold includes these by default, but committing an `.env` is the usual mistake.
+
