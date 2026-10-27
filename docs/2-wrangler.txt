@@ -1,0 +1,30 @@
+Partner — install Wrangler per project as a dev dependency. Cloudflare recommends against a global install, because a pinned version stops `wrangler.toml` and the CLI from drifting apart across projects.
+
+**Install (from the project root):**
+
+```sh
+npm install -D wrangler@latest
+```
+
+**Check it and log in:**
+
+```sh
+npx wrangler --version
+npx wrangler login     # opens a browser for OAuth with your Cloudflare account
+npx wrangler whoami    # confirms which account you're logged in to
+```
+
+**Without installing:** `npx wrangler <cmd>` downloads it on demand. That works for one-off use, but in a project the pinned dev dependency is better.
+
+**For the Astro site:**
+
+```sh
+npm run build
+npx wrangler pages deploy dist
+```
+
+The first deploy asks you to create or pick a Pages project. After that it's the same command each time.
+
+**In CI:** `wrangler login` needs a browser, so it won't work there. Set the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` environment variables instead, and Wrangler picks them up automatically.
+
+Wrangler needs a current Node LTS, the same requirement as Astro, so if Astro runs, Wrangler will too.

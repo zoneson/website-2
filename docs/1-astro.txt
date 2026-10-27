@@ -1,0 +1,87 @@
+Partner — Astro is a project scaffold that `npm create` pulls in. You don't install it globally.
+
+**Prerequisite:** Node.js on a current LTS release (`node -v` should show 20 or newer).
+
+**New project:**
+
+```sh
+npm create astro@latest
+```
+
+The wizard asks for a target directory, a template, whether to install dependencies, and whether to run `git init`. To skip the prompts and scaffold into the current directory:
+
+```sh
+npm create astro@latest . -- --template minimal --install --no-git --yes
+```
+
+**Run it:**
+
+```sh
+npm run dev      # dev server on http://localhost:4321
+npm run build    # static output in dist/
+npm run preview  # serve the built output locally
+```
+
+**For Cloudflare** (your working directory is under `lab/cloudflare/`):
+
+- **Static site:** no adapter needed. Deploy `dist/` with `npx wrangler pages deploy dist`, or connect the repo to Pages/Workers with build command `npm run build` and output directory `dist`.
+- **SSR or on-demand routes:** add the adapter, which updates `astro.config.mjs` for you:
+  ```sh
+  npx astro add cloudflare
+  ```
+
+**Adding to an existing project instead of scaffolding:**
+
+```sh
+npm install astro
+```
+
+Then add `"dev": "astro dev"` and `"build": "astro build"` to `package.json`, create `astro.config.mjs`, and put pages under `src/pages/`.
+
+`website-2` isn't a git repo, and I haven't looked at what's in it. Before the `.` form scaffolds into it, check whether it already has a `package.json`. I can do that and run the scaffold if you want.
+
+========================================================
+
+Partner — the scaffold worked this time, but the install step failed, and the failure comes from your global npm config, not from Astro. I checked the npm logs from your latest run.
+
+**1. Root cause: `~/.npmrc` blocks every project install.**
+
+```
+~/.npmrc:   allow-scripts=@anthropic-ai/claude-code
+```
+
+In npm 11.19, `allow-scripts` is not accepted in user-level config for project-scoped installs. When `create astro --install` ran `npm install`, npm refused:
+
+```
+error code EALLOWSCRIPTS
+error --allow-scripts is not allowed in project-scoped installs. Add the entries to the
+      "allowScripts" field in package.json, or to .npmrc, instead.
+```
+
+As a result, `node_modules/` was never created, and `npm run dev` (your next command, 07:49) had no `astro` binary to run. This will break `npm install` in any project, not only this one, until that line is removed.
+
+**2. Minor: the dash in `–yes` is wrong.**
+
+The argv in the log contains `"–yes"`, which is an en-dash (U+2013) copied from formatted text, not two ASCII hyphens. npm warned `Argument starts with non-ascii dash`. It was harmless here, but type `--yes` by hand.
+
+(`@lastes` isn't the problem. The log shows the command actually ran as `astro@latest`.)
+
+**Fix:**
+
+```sh
+# remove the global allow-scripts line (it exists only for installing Claude Code globally)
+sed -i '' '/^allow-scripts=/d' ~/.npmrc
+
+cd "/Volumes/Backup Plus/ai-development/110-billwu/course2/lab/cloudflare/website-2"
+npm install
+npm run dev
+npm install -D wrangler
+```
+
+If you need that permission again for a future global Claude Code upgrade, pass it on the command line for that one command instead of keeping it in `~/.npmrc`:
+
+```sh
+npm i -g @anthropic-ai/claude-code --allow-scripts=@anthropic-ai/claude-code
+```
+
+I haven't touched `~/.npmrc` because it's your global config. Should I remove the line and run the install for you?
